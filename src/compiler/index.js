@@ -12,8 +12,12 @@ function baseCompile (
   options: CompilerOptions
 ): CompiledResult {
   const ast = parse(template.trim(), options)
+  // console.log('ast :>> ', ast)
+  // Object.keys(ast).forEach(name => console.log('name :>> ', name))
   optimize(ast, options)
   const code = generate(ast, options)
+  // console.log('code.render :>> ', JSON.stringify(code.render))
+  // console.log('code.staticRenderFns :>> ', JSON.stringify(code.staticRenderFns))
   return {
     ast,
     render: code.render,

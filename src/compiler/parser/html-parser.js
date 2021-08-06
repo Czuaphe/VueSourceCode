@@ -58,7 +58,7 @@ const decodingMap = {
 }
 const encodedAttr = /&(?:lt|gt|quot|amp);/g
 const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#10);/g
-
+// 根据配置将属性值的转义字符反转义回去
 function decodeAttr (value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr
   return value.replace(re, match => decodingMap[match])
@@ -190,20 +190,32 @@ export function parseHTML (html, options) {
     const start = html.match(startTagOpen)
     if (start) {
       const match = {
-        tagName: start[1],
+        tagName: start[1], // 就是标签名，如：div
         attrs: [],
-        start: index
+        start: index // 标签开始在字符串中的索引
       }
-      advance(start[0].length)
+      advance(start[0].length) // 跳过标签名。如：<div
       let end, attr
+      // 没有匹配到标签尾（>或者/>）且匹配到了属性时进入while循环
       while (!(end = html.match(startTagClose)) && (attr = html.match(attribute))) {
-        advance(attr[0].length)
-        match.attrs.push(attr)
+        advance(attr[0].length) // 跳过已经匹配过的属性的长度
+        match.attrs.push(attr) // 添加到match数组
       }
+      // 处理标签尾部
       if (end) {
-        match.unarySlash = end[1]
+        match.unarySlash = end[1] // 值应该是/或者空，判断标签是否单闭合
         advance(end[0].length)
-        match.end = index
+        match.end = index // 标签结束在字符串中的索引
+        /**
+         * match = {
+         *   tagName: 'div',
+         *   attrs: [
+         *     [' id="app"','id','=','app',null,null],
+         *   ],
+         *   start: 0,
+         *   unarySlash: '' // 是否是单闭合标签
+         * }
+         */
         return match
       }
     }
@@ -211,8 +223,7 @@ export function parseHTML (html, options) {
 
   function handleStartTag (match) {
     const tagName = match.tagName
-    const unarySlash = match.unarySlash
-
+    const unarySlash = match.unarySlash // 是否有/
     if (expectHTML) {
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
         parseEndTag(lastTag)
@@ -221,11 +232,13 @@ export function parseHTML (html, options) {
         parseEndTag(tagName)
       }
     }
-
-    const unary = isUnaryTag(tagName) || tagName === 'html' && lastTag === 'head' || !!unarySlash
+    // 综合判断标签是不是单闭合标签，因为有的单闭合标签可能忘记加/。如：<input type="text" > 应该也是单闭合标签
+    const unary = isUnaryTag(tagName) || // 1、可能是公认的单闭合标签
+      tagName === 'html' && lastTag === 'head' || // TODO 2、？？？
+      !!unarySlash // 3、标签是使用/>闭合
 
     const l = match.attrs.length
-    const attrs = new Array(l)
+    const attrs = new Array(l) // 根据属性个数新建数组
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i]
       // hackish work around FF bug https://bugzilla.mozilla.org/show_bug.cgi?id=369778
@@ -235,21 +248,23 @@ export function parseHTML (html, options) {
         if (args[5] === '') { delete args[5] }
       }
       const value = args[3] || args[4] || args[5] || ''
+      // 通过match.attrs[i]的属性数组生成属性对象
       attrs[i] = {
-        name: args[1],
-        value: decodeAttr(
+        name: args[1], // 属性名
+        value: decodeAttr( // 反转义属性值
           value,
           options.shouldDecodeNewlines
         )
       }
     }
-
+    // 不是单闭合标签
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs })
-      lastTag = tagName
+      lastTag = tagName // 上一个标签设置为当前标签
     }
 
     if (options.start) {
+      // 确定AST结构，处理vue特有的指令。如：v-if，v-bind，@input="handler"等
       options.start(tagName, attrs, unary, match.start, match.end)
     }
   }

@@ -96,7 +96,7 @@ export function parse (
       if (isIE && ns === 'svg') {
         attrs = guardIESVGBug(attrs)
       }
-
+      // 为标签新建AST结点
       const element: ASTElement = {
         type: 1,
         tag,

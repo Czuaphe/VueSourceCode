@@ -14,7 +14,7 @@ const idToTemplate = cached(id => {
 })
 
 const mount = Vue.prototype.$mount
-Vue.prototype.$mount = function (
+Vue.prototype.$mount = function ( 
   el?: string | Element,
   hydrating?: boolean
 ): Component {
@@ -75,7 +75,7 @@ Vue.prototype.$mount = function (
       }
     }
   }
-  return mount.call(this, el, hydrating)
+  return mount.call(this, el, hydrating) // 没有覆盖之前的mount方法
 }
 
 /**
