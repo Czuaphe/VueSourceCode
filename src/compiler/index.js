@@ -13,7 +13,13 @@ function baseCompile (
 ): CompiledResult {
   const ast = parse(template.trim(), options)
   // console.log('ast :>> ', ast)
-  // Object.keys(ast).forEach(name => console.log('name :>> ', name))
+  Object.keys(ast).forEach(name => {
+    if (name !== 'parent' && name !== 'children') {
+      console.log('name :>> ', name + ': ' + JSON.stringify(ast[name]))
+    } else {
+      console.log('name :>> ', name + ': ' + typeof ast[name])
+    }
+  })
   optimize(ast, options)
   const code = generate(ast, options)
   // console.log('code.render :>> ', JSON.stringify(code.render))

@@ -447,6 +447,7 @@ export function createPatchFunction (backend) {
     }
     let i
     const data = vnode.data
+    console.log('vnode.data: ', vnode.data)
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
       i(oldVnode, vnode)
     }
@@ -565,6 +566,7 @@ export function createPatchFunction (backend) {
   }
 
   return function patch (oldVnode, vnode, hydrating, removeOnly, parentElm, refElm) {
+    // 新节点不存在且老节点存在时，销毁老节点
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
@@ -572,17 +574,21 @@ export function createPatchFunction (backend) {
 
     let isInitialPatch = false
     const insertedVnodeQueue = []
-
+    // 如果老节点不存在，就直接创建新节点
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
       isInitialPatch = true
+      console.log('vnode :>> ', Object.keys(vnode))
+      console.log('vnode.data :>> ', vnode.data)
       createElm(vnode, insertedVnodeQueue, parentElm, refElm)
     } else {
       const isRealElement = isDef(oldVnode.nodeType)
+      // 老节点不是真实结点且老节点和新节点是同一节点，直接比较
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, removeOnly)
       } else {
+        // 如果是真实节点，需要首先创建对应的虚拟节点代替
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
@@ -593,6 +599,7 @@ export function createPatchFunction (backend) {
           }
           if (isTrue(hydrating)) {
             if (hydrate(oldVnode, vnode, insertedVnodeQueue)) {
+              // ???
               invokeInsertHook(vnode, insertedVnodeQueue, true)
               return oldVnode
             } else if (process.env.NODE_ENV !== 'production') {

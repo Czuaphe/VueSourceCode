@@ -56,7 +56,7 @@ export function renderMixin (Vue: Class<Component>) {
       staticRenderFns,
       _parentVnode
     } = vm.$options
-
+    console.log('render :>> ', render.toString())
     if (vm._isMounted) {
       // clone slot nodes on re-renders
       for (const key in vm.$slots) {

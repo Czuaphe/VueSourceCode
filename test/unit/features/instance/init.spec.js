@@ -18,11 +18,11 @@ describe('Initialization', () => {
         }
       },
       // eslint-disable-next-line no-multi-str
-      template: '<div id="app">\
-        这里是文本<箭头之后的文本\
-        <a :href="url" target="_blank" >前面的文本{{title}}后面的文本</a>\
-        <img :src="img" />\
-      </div>'
+      template: `<div id="app">
+        这里是文本<箭头之后的文本
+        <a :href="url" target="_blank" >前面的文本{{title}}后面的文本</a>
+        <img :src="img" />
+      </div>`
     })
     vue.$mount()
     expect(vue instanceof Vue).toBe(true)
